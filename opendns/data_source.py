@@ -49,6 +49,8 @@ class DataSource(IDataSource):
     # 1 MiB
     FILE_CHUNKSIZE = 1048576
 
+    DEFAULT_ENCODING = "UTF-8"
+
     _CLIENT_NAME = "dashboard-browser"
     _CLIENT_VERSION = "0.5.0"
 
@@ -57,7 +59,7 @@ class DataSource(IDataSource):
 
     _LOGIN_URL = "https://login.opendns.com/?return_to=https%3A%2F%2Fdashboard.opendns.com%2F"
     _LOGOUT_URL = "https://login.opendns.com/logout/?source=&return_to=https%3A%2F%2Fdashboard.opendns.com%2F"
-    _ROOT_URL = "http://dashboard.opendns.com/"
+    _ROOT_URL = "https://dashboard.opendns.com/"
 
     _USER_AGENT_FIELD = "User-Agent"
 
@@ -78,7 +80,7 @@ class DataSource(IDataSource):
         self._password_field = self._PASSWORD_FIELD
 
         self._rate_limiter = RateLimiter(
-            num_requests=20,
+            num_requests=19,
             period=120)
 
         self.__is_connected = False
@@ -108,23 +110,25 @@ class DataSource(IDataSource):
 
         self._rate_limiter.check()
 
-        split_url = SplitResult(self._root_url_split.scheme, self._root_url_split.netloc, endpoint, None, None)
+        split_url = SplitResult(
+            self._root_url_split.scheme, self._root_url_split.netloc, endpoint, None, None)
 
         is_stream = (file is not None)
 
         content = None
-        with (
-                self._make_connection() as connection,
-                connection.get(split_url.geturl(), params=params, stream=is_stream) as response
-        ):
+        with self._make_connection() as connection:
+            
+            response = connection.get(split_url.geturl(), params=params, stream=is_stream)
 
-            response.raise_For_status()
+            response.raise_for_status()
+
+            response.encoding = self._determine_encoding(response.encoding)
 
             if not is_stream:
                 content = response.content
 
             else:
-                for file_chunk in response.iter_content(chunk_size=self.chunk_size):
+                for file_chunk in response.iter_content(chunk_size=self.chunk_size, decode_unicode=True):
                     file.write(file_chunk)
 
         return content
@@ -138,6 +142,19 @@ class DataSource(IDataSource):
 
         return super().post_endpoint(endpoint, params)
 
+    def _determine_encoding(self, response_encoding: str) -> str:
+        """
+        Returns the encoding or default encoding if the provided value is None
+
+        :param response_encoding: A encoding value obtained from an HTTP
+            response.
+
+        :returns: Returns the DEFAULT_ENCODING, unless response_encoding
+            contains a value.
+        """
+
+        return response_encoding if response_encoding else self.DEFAULT_ENCODING
+
     @contextmanager
     def _make_connection(self) -> requests.Session:
         """
@@ -150,13 +167,14 @@ class DataSource(IDataSource):
 
         if not self.__is_connected:
 
-            self.__session.headers.update({self._USER_AGENT_FIELD: self.user_agent})
+            self.__session.headers.update(
+                {self._USER_AGENT_FIELD: self.user_agent})
 
             response = self.__session.get(self._login_url)
             response.raise_for_status()
 
             login_page = LoginPageParser()
-            login_page.feed(response.content)
+            login_page.feed(response.text)
 
             if login_page.error_msg is not None:
                 raise RuntimeError(login_page.error_msg)
@@ -174,23 +192,25 @@ class DataSource(IDataSource):
                     params.append(field)
 
             if not params:
-                raise RuntimeError("Service Unavailable. Check https://login.opendns.com for more information.")
+                raise RuntimeError(
+                    "Service Unavailable. Check https://login.opendns.com for more information.")
 
             if login_page.form_method != "POST":
-                raise RuntimeError("Unable to login, invalid submission method.")
+                raise RuntimeError(
+                    "Unable to login, invalid submission method.")
 
             response = self.__session.post(login_page.form_action, data=params)
             response.raise_for_status()
 
             login_page = LoginPageParser()
-            login_page.feed(response.content)
+            login_page.feed(response.text)
 
             if login_page.error_msg is not None:
                 raise RuntimeError(login_page.error_msg)
 
             self.__is_connected = True
 
-        yield self._session
+        yield self.__session
 
     def _get_user_agent(self) -> str:
         """
@@ -219,6 +239,8 @@ class LoginPageParser(HTMLParser):
     FORM_NAME = "signin"
 
     def __init__(self) -> None:
+
+        super().__init__()
 
         self.error_msg = None
 
