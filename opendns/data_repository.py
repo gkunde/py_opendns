@@ -172,7 +172,7 @@ class ReportDataRepository(IReportDataRepository):
         for entry in self._get_report_records(self._report_requesttypes, network_refid, reportdate, None):
 
             record = RequestTypesRecord(
-                report_period=reportdate,
+                report_period=datetime(reportdate.year, reportdate.month, reportdate.day),
                 request_type=entry["Request Type"],
                 requests=int(entry["Requests"])
             )
