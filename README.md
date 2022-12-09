@@ -17,4 +17,4 @@ Enables an application to pull down reports from OpenDNS's Dashboard Statistics 
 
 ## Dependencies
 Every effort is made to keep this library small and light. However some extra libraries are required to use the library as is.
-* requests
+* requests - https://requests.readthedocs.io/en/latest/
