@@ -338,4 +338,4 @@ class ReportDataRepository(IReportDataRepository):
         :param report_period: A string representation of a date object.
         """
 
-        return datetime.strptime(report_period, "%Y-%m-%d %H:%M:%S")
+        return datetime.strptime(report_period.strip(), "%Y-%m-%d %H:%M:%S")
