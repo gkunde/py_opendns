@@ -65,7 +65,8 @@ class OpenDns(IOpenDns):
         :returns: A Generator object that returns DomainActivityRecord objects.
         """
 
-        return self.report_data_repository.get_domain_activity_records(self.network_refid, reportdate)
+        for record in self.report_data_repository.get_domain_activity_records(self.network_refid, reportdate):
+            yield record
 
     def get_request_types_report(self, reportdate: date) -> Generator[RequestTypesRecord, None, None]:
         """
@@ -76,7 +77,8 @@ class OpenDns(IOpenDns):
         :returns: A Generator object that returns RequestTypesRecord objects.
         """
 
-        return self.report_data_repository.get_request_types_records(self.network_refid, reportdate)
+        for record in self.report_data_repository.get_request_types_records(self.network_refid, reportdate):
+            yield record
 
     def get_total_requests_report(
             self,
@@ -95,10 +97,11 @@ class OpenDns(IOpenDns):
         :returns: A Generator object that reeturn TotalRequestsRecord objects.
         """
 
-        return self.report_data_repository.get_total_requests_records(
-            self.network_refid,
-            reportdate_start,
-            reportdate_end)
+        for record in self.report_data_repository.get_total_requests_records(
+                self.network_refid,
+                reportdate_start,
+                reportdate_end):
+            yield record
 
     def get_total_unique_domains_report(
             self,
@@ -118,10 +121,11 @@ class OpenDns(IOpenDns):
             objects.
         """
 
-        return self.report_data_repository.get_total_unique_domains_records(
-            self.network_refid,
-            reportdate_start,
-            reportdate_end)
+        for record in self.report_data_repository.get_total_unique_domains_records(
+                self.network_refid,
+                reportdate_start,
+                reportdate_end):
+            yield record
 
     def get_unique_ipaddress_report(
             self,
@@ -141,7 +145,8 @@ class OpenDns(IOpenDns):
             objects.
         """
 
-        return self.report_data_repository.get_unique_ipaddress_records(
-            self.network_refid,
-            reportdate_start,
-            reportdate_end)
+        for record in self.report_data_repository.get_unique_ipaddress_records(
+                self.network_refid,
+                reportdate_start,
+                reportdate_end):
+            yield record
