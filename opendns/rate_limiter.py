@@ -52,7 +52,7 @@ class RateLimiter(IRateLimiter):
         until the limit period as expired.
         """
 
-        for _ in range(self.num_requests):
+        for _ in range(int(self.period) + 1):
 
             if len(self.__checkpoints) < self.num_requests:
                 # not at the limit yet, safe to proceed
