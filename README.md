@@ -1,7 +1,7 @@
 # OpenDNS Dashboard Browser
 A client library for accessing resources provided by OpenDNS's Dashboard website.
 
-This project's maintainers are not affiliated or employed by OpenDNS or it's parent organization Cisco Systems, Inc.
+This project's maintainers are not affiliated or employed by OpenDNS or its parent organization Cisco Systems, Inc.
 
 > **IMPORTANT:**
 >
