@@ -295,6 +295,8 @@ class ReportDataRepository(IReportDataRepository):
         """
 
         max_pages = self._max_pages if report_type in self._multipage_report_types else 1
+        # adjust for off-by-one (using cardinal counting)
+        max_pages += 1
 
         report_range = reportdate_start.isoformat()
         if reportdate_end is not None and reportdate_end != reportdate_start:
