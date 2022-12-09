@@ -34,6 +34,7 @@ class DomainActivityRecord:
 
     hostname: str = None
     requests: int = None
+
     is_blocked_hostname: bool = None
     is_blocked_category: bool = None
     is_blocked_malware: bool = None
